@@ -1,4 +1,4 @@
-package com.mark.demo.demo;
+package com.mark.demo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

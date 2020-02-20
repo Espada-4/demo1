@@ -1,4 +1,4 @@
-package com.mark.demo.demo.controller;
+package com.mark.demo.controller;
 
 
 import org.springframework.stereotype.Controller;
