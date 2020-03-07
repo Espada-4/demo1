@@ -2,7 +2,6 @@ package com.mark.demo.service;
 
 import com.mark.demo.mapper.UserMapper;
 import com.mark.demo.model.User;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,4 +21,9 @@ public class UserService {
     public List<User> getAll() {
         return userMapper.getAll();
     };
+
+    public User findByToken(String token) {
+       return userMapper.findByToken(token);
+
+    }
 }

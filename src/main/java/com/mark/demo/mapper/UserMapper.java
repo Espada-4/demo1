@@ -3,6 +3,7 @@ package com.mark.demo.mapper;
 import com.mark.demo.model.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -14,4 +15,7 @@ public interface UserMapper {
 
     @Select("SELECT * FROM user")
     List<User> getAll();
+
+    @Select("SELECT * FROM user where token = #{token}")
+    User findByToken(@Param("token") String token);
 }
