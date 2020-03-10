@@ -44,15 +44,16 @@ public class AutherizeController {
         accessTokenDTO.setClient_secret(client_secret);
         String accessToken = githubProvider.getAccessToken(accessTokenDTO);
         GithubUser githubUser = githubProvider.getUser(accessToken);
-        if (githubUser != null) {
+        if (githubUser != null && githubUser.getId()!=null) {
             //登录成功写cookie和session
             User user = new User();
             String token = UUID.randomUUID().toString();
             user.setToken(token);
             user.setName(githubUser.getName());
             user.setAccount_id(String.valueOf(githubUser.getId()));
-            user.setGmtCreate(System.currentTimeMillis()/1000);
+            user.setGmtCreate(System.currentTimeMillis());
             user.setGmtModified(user.getGmtCreate());
+            user.setAvatarUrl(githubUser.getAvatarUrl());
             userService.insert(user);
             response.addCookie(new Cookie("token",token));
             return "redirect:/";
