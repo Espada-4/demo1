@@ -2,6 +2,7 @@ package com.mark.demo.service;
 
 import com.mark.demo.mapper.UserMapper;
 import com.mark.demo.model.User;
+import com.mark.demo.model.UserExample;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,27 +15,33 @@ public class UserService {
     @Autowired
     UserMapper userMapper;
 
-    public List<User> getAll() {
-        return userMapper.getAll();
-    };
-
-    public User findByToken(String token) {
-       return userMapper.findByToken(token);
+    public List<User> findByToken(String token) {
+        UserExample example = new UserExample();
+        example.createCriteria()
+                .andTokenEqualTo(token);
+        return userMapper.selectByExample(example);
 
     }
 
     public void createOrUpdateUser(User user) {
-        User dbUser = userMapper.findByAccountId(user.getAccountId());
-        if (dbUser==null){
+        UserExample example = new UserExample();
+        example.createCriteria()
+                .andAccountIdEqualTo(user.getAccountId());
+        List<User> dbUsers = userMapper.selectByExample(example);
+        if (dbUsers.size() == 0) {
             user.setGmtCreate(System.currentTimeMillis());
             user.setGmtModified(user.getGmtCreate());
             userMapper.insert(user);
-        }else {
-            dbUser.setGmtCreate(System.currentTimeMillis());
-            dbUser.setAvatarUrl(user.getAvatarUrl());
-            dbUser.setName(user.getName());
-            dbUser.setToken(user.getToken());
-            userMapper.updateUser(dbUser);
+        } else {
+            User dbUser = dbUsers.get(0);
+            User updateUser = new User();
+            updateUser.setGmtCreate(System.currentTimeMillis());
+            updateUser.setAvatarUrl(user.getAvatarUrl());
+            updateUser.setName(user.getName());
+            updateUser.setToken(user.getToken());
+            example.createCriteria()
+                    .andAccountIdEqualTo(dbUser.getAccountId());
+            userMapper.updateByExampleSelective(updateUser,example);
         }
     }
 }
