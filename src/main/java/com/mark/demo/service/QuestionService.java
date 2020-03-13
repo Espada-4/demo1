@@ -76,6 +76,7 @@ public class QuestionService {
             QuestionDTO questionDTO = new QuestionDTO();
             BeanUtils.copyProperties(question, questionDTO);
             questionDTO.setUser(user);
+            System.out.println(11111);
             questionDTOS.add(questionDTO);
         }
         paginationDTO.setQuestionDTOS(questionDTOS);
