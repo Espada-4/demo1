@@ -20,7 +20,6 @@ import java.util.UUID;
 public class AutherizeController {
     @Autowired
     private GithubProvider githubProvider;
-
     @Autowired
     private UserService userService;
 

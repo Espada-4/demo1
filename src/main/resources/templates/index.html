@@ -3,13 +3,24 @@
 <head>
     <title>我的demo</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js">
+    <script src="/js/jquery.min.js">
     </script>
     <link rel="stylesheet" href="css/bootstrap.min.css"/>
     <link rel="stylesheet" href="css/bootstrap-theme.min.css"/>
-    <link rel="stylesheet" href="css/mydemo.css"/>
+    <link rel="stylesheet" href="/css/myDemo.css"/>
     <script type="application/javascript" src="js/bootstrap.min.js"></script>
+
 </head>
+<script type="application/javascript">
+    window.onload = function () {
+        var closable = window.localStorage.getItem("closable");
+        if (closable == "true") {
+            window.close();
+            window.localStorage.removeItem("closable");
+        }
+
+    }
+</script>
 <body>
 
 <div th:insert="navigation::nav"></div>
@@ -19,14 +30,14 @@
         <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
             <h2><span class="glyphicon glyphicon-list" aria-hidden="true"></span>发现</h2>
             <hr>
-            <div class="media" th:each="question: ${pagination.questionDTOS}">
+            <div class="media" th:each="question: ${pagination.data}">
                 <div class="media-left">
                     <a href="#">
                         <img class="media-object img-rounded" th:src="${question.user.avatarUrl}">
                     </a>
                 </div>
                 <div class="media-body">
-                    <h4 class="media-heading" >
+                    <h4 class="media-heading">
                         <a th:href="@{'/question/'+ ${question.id}}" th:text="${question.title}"></a>
                     </h4>
                     <span th:text="${question.description}"></span>

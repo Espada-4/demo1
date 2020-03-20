@@ -1,8 +1,13 @@
 package com.mark.demo.interceptor;
 
+import com.mark.demo.enums.AdPosEnum;
+import com.mark.demo.mapper.UserMapper;
 import com.mark.demo.model.User;
-import com.mark.demo.service.UserService;
+import com.mark.demo.model.UserExample;
+import com.mark.demo.service.AdService;
+import com.mark.demo.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -10,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -22,23 +28,41 @@ import java.util.List;
 public class SessionInterceptor implements HandlerInterceptor {
 
     @Autowired
-    private UserService userService;
+    private UserMapper userMapper;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private AdService adService;
+
+    @Value("${github.redirect_uri}")
+    private String redirectUri;
+
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        request.getServletContext().setAttribute("redirectUri", redirectUri);
+        // 没有登录的时候也可以查看导航
+        for (AdPosEnum adPos : AdPosEnum.values()) {
+            request.getServletContext().setAttribute(adPos.name(), adService.list(adPos.name()));
+        }
         Cookie[] cookies = request.getCookies();
-        if (cookies != null && cookies.length != 0) {
+        if (cookies != null && cookies.length != 0)
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("token")) {
                     String token = cookie.getValue();
-                    List<User> users  = userService.findByToken(token);
+                    UserExample userExample = new UserExample();
+                    userExample.createCriteria()
+                            .andTokenEqualTo(token);
+                    List<User> users = userMapper.selectByExample(userExample);
                     if (users.size() != 0) {
-                        request.getSession().setAttribute("user", users.get(0));
+                        HttpSession session = request.getSession();
+                        session.setAttribute("user", users.get(0));
+                        Long unreadCount = notificationService.unreadCount(users.get(0).getId());
+                        session.setAttribute("unreadCount", unreadCount);
                     }
                     break;
                 }
             }
-        }
         return true;
     }
 
