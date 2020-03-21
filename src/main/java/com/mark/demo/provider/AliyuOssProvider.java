@@ -38,8 +38,10 @@ public class AliyuOssProvider {
     private String bucketName;
     @Value("${aliyuOss.Oss.objectName}")
     private String objectName;
+    @Value("${aliyuOss.Oss.image_expire_time}")
+    private static  long IMAGE_EXPIRE_TIME;
     static Logger logger = Logger.getLogger(AliyuOssProvider.class);
-    private static final long IMAGE_EXPIRE_TIME = 10 * 365 * 24 * 60 * 60 * 1000L;
+
 
     public String upload(InputStream fileStream, String mimeType, String fileName) {
         String generatedFileName;
@@ -97,8 +99,8 @@ public class AliyuOssProvider {
 //            for (OSSObjectSummary object : objectSummary) {
 //                System.out.println("\t" + object.getKey());
 //            }
-            Date expiration = new Date(new Date().getTime() + IMAGE_EXPIRE_TIME);
-            URL url = ossClient.generatePresignedUrl(bucketName, objectName + generatedFileName, expiration);
+//            Date expiration = new Date(new Date().getTime() + IMAGE_EXPIRE_TIME);
+            URL url = ossClient.generatePresignedUrl(bucketName, objectName + generatedFileName,  new Date(System.currentTimeMillis() +IMAGE_EXPIRE_TIME));
             if (url != null) {
                 return url.toString();
             }else {

@@ -136,6 +136,11 @@
             </plugin>
 
         </plugins>
+        <resources>
+            <resource>
+                <directory>sre/main/resources</directory>
+            </resource>
+        </resources>
     </build>
 
 </project>

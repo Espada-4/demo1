@@ -2,6 +2,8 @@ package com.mark.demo.service;
 
 import com.mark.demo.dto.PaginationDTO;
 import com.mark.demo.dto.QuestionDTO;
+import com.mark.demo.dto.QuestionQueryDTO;
+import com.mark.demo.enums.SortEnum;
 import com.mark.demo.exception.CustomizeErrorCode;
 import com.mark.demo.exception.CustomizeException;
 import com.mark.demo.mapper.QuestionExtMapper;
@@ -10,13 +12,14 @@ import com.mark.demo.mapper.UserMapper;
 import com.mark.demo.model.Question;
 import com.mark.demo.model.QuestionExample;
 import com.mark.demo.model.User;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,12 +34,45 @@ public class QuestionService {
     @Autowired
     private UserMapper userMapper;
 
-    public PaginationDTO list(Integer page, Integer size) {
+    public PaginationDTO list(String search, String tag, String sort, Integer page, Integer size) {
         if (size <= 0) size = 5;
+        if (StringUtils.isNotBlank(search)) {
+            String[] tags = StringUtils.split(search, " ");
+            search = Arrays
+                    .stream(tags)
+                    .filter(StringUtils::isNotBlank)
+                    .map(t -> t.replace("+", "").replace("*", "").replace("?", ""))
+                    .filter(StringUtils::isNotBlank)
+                    .collect(Collectors.joining("|"));
+        }
+
+
         Integer totalPage;
         PaginationDTO paginationDTO = new PaginationDTO();
-        QuestionExample example = new QuestionExample();
-        Integer totalCount = (int) questionMapper.countByExample(example);
+
+        QuestionQueryDTO questionQueryDTO = new QuestionQueryDTO();
+        questionQueryDTO.setSearch(search);
+        if (StringUtils.isNotBlank(tag)) {
+            tag = tag.replace("+", "").replace("*", "").replace("?", "");
+            questionQueryDTO.setTag(tag);
+        }
+
+        for (SortEnum sortEnum : SortEnum.values()) {
+            if (sortEnum.name().toLowerCase().equals(sort)) {
+                questionQueryDTO.setSort(sort);
+
+                if (sortEnum == SortEnum.HOT7) {
+                    questionQueryDTO.setTime(System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 7);
+                }
+                if (sortEnum == SortEnum.HOT30) {
+                    questionQueryDTO.setTime(System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 30);
+                }
+                break;
+            }
+        }
+
+
+        Integer totalCount = questionExtMapper.countBySearch(questionQueryDTO);
 
         if (totalCount % size == 0) {
             totalPage = totalCount / size;
@@ -46,14 +82,14 @@ public class QuestionService {
         if (page > totalPage) page = totalPage;
         if (page < 1) page = 1;
         paginationDTO.setPagination(totalPage, page);
+        Integer offset = page < 1 ? 0 : size * (page - 1);
 
-        Integer offset = size * (page - 1);
-
-        example.setOrderByClause("gmt_create desc");
-        List<Question> questionList = questionMapper.selectByExampleWithRowbounds(example, new RowBounds(offset, size));
+        questionQueryDTO.setSize(size);
+        questionQueryDTO.setPage(offset);
+        List<Question> questions = questionExtMapper.selectBySearch(questionQueryDTO);
         List<QuestionDTO> questionDTOS = new ArrayList<>();
 
-        for (Question question : questionList) {
+        for (Question question : questions) {
             User user = userMapper.selectByPrimaryKey(question.getCreator());
             QuestionDTO questionDTO = new QuestionDTO();
             BeanUtils.copyProperties(question, questionDTO);

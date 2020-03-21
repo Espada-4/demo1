@@ -3,14 +3,8 @@
 <head>
     <title>发布·我的demo</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <script type="application/javascript" src="/js/jquery.min.js"></script>
-    <link rel="stylesheet" href="/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/css/bootstrap-theme.min.css"/>
-    <link rel="stylesheet" href="/css/myDemo.css"/>
-    <link rel="stylesheet" href="/css/editormd.css"/>
-    <script type="application/javascript" src="/js/bootstrap.min.js"></script>
-    <script type="application/javascript" src="/js/editormd.min.js"></script>
-    <script type="application/javascript" src="/js/myDemo.js"></script>
+    <head th:insert="~{import :: head}"></head>
+    <head th:insert="~{import :: markdown}"></head>
 </head>
 <body>
 <div th:insert="navigation::nav"></div>
@@ -94,5 +88,7 @@
         </div>
     </div>
 </div>
+<div th:insert="~{footer :: foot}"></div>
+
 </body>
 </html>
